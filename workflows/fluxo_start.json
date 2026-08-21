@@ -1,0 +1,680 @@
+{
+  "name": "Fluxo Start",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "Webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2192,
+        3008
+      ],
+      "id": "70a5fefc-0a72-48cc-95af-832e32dc196f",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6bb07214-2ea5-41ca-8457-9e5094db5d22",
+              "name": "Quem mandou",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "148fe37f-3711-45e7-8ffd-4832869856ab",
+              "name": "Instancia",
+              "value": "={{ $json.body.instance }}",
+              "type": "string"
+            },
+            {
+              "id": "28401675-8843-491a-bb59-cb31a7a627f7",
+              "name": "Mensagem ",
+              "value": "={{ $json.body.data.message?.conversation || $json.body.data.message?.extendedTextMessage?.text || $json.body.data.message?.audioMessage?.contextInfo?.transcription || \"[Mensagem não suportada/Mídia]\" }}",
+              "type": "string"
+            },
+            {
+              "id": "246600e5-6512-47bd-9201-2b4a39b6e793",
+              "name": "Id da mensagem",
+              "value": "={{ $json.body.data.key.id }}",
+              "type": "string"
+            },
+            {
+              "id": "ba4fe8c9-b79d-458b-b7d6-b74913737da4",
+              "name": "Nome da pessoa ",
+              "value": "={{ $json.pushName || 'Amigo' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2384,
+        3008
+      ],
+      "id": "69c962d9-6543-4e4e-8cf3-179e8e5b4a44",
+      "name": "DADOS"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json['Mensagem '] }}",
+        "options": {
+          "systemMessage": "=Regra de Ouro (Prioridade Máxima) Se o usuário informar um nome durante a conversa, ignore qualquer nome vindo dos metadados do sistema. A vontade do usuário sobre como quer ser chamado é a prioridade máxima.\n\nMensagem de Saudação (Passo 1) Texto: Olá! Tudo bem? 😊 Seja bem-vindo(a)!\n\nVi que você demonstrou interesse no nosso anúncio e estou aqui para te ajudar a realizar esse sonho. ✨\n\nPara te atender melhor, me conta rapidinho: 👉 Qual o seu nome?\n\n⚠️ Não consigo ouvir áudio ou receber ligação\n\nColeta do Bem (Passo 2) Somente após o usuário responder o nome, armazene na variável nome e pergunte: Texto: Prazer em te conhecer, [nome]! 😊\n\n👉 O que você deseja adquirir: automóvel ou imóvel? 🚗🏡\n\nMensagem de Desenvolvimento (Passo 3) Assim que o lead identificar o que deseja, armazene na variável bem e responda obrigatoriamente: \nO consórcio é uma forma inteligente e econômica de planejar sua compra: ✔️ Sem juros ✔️ Taxa fixa e diluída ✔️ Sem pagar o dobro do valor.\n\nMe conta: qual valor de crédito você tem em mente para o seu [bem]? 💭\n\nValidação de Valor e Ficha (Passo 4) Analise o valor informado com base no [bem] escolhido:\n\nSe for IMÓVEL: O valor mínimo é 100.000. Se for menor, informe que para imóveis o valor mínimo é 100.000 e peça um novo valor.\n\nSe for AUTOMÓVEL: O valor mínimo é 45.000. Se for menor, informe que para automóveis o valor mínimo é 45.000 e peça um novo valor.\n\nSe o valor for válido: Armazene na variável credito e siga para a ficha.\n\nFicha de Cadastro e Regra de Horário (Ação Obrigatória) Envie este texto logo após a validação do crédito. Verifique o horário atual do sistema:\n\nHorário Comercial: Segunda a Sexta (08:00 às 17:30) e Sábado (08:00 às 12:00).\n\nSe estiver DENTRO do horário: Informe que o consultor entrará em contato em poucos minutos.\n\nSe estiver FORA do horário: Informe que nosso horário é de Seg a Sex (08h às 17h30) e Sáb (08h às 12h) e que o consultor entrará em contato assim que iniciarmos o próximo expediente.\n\nTexto da Ficha: \"Ao ser contemplado, você compra o bem à vista e ganha poder de negociação. Além disso, somos fiscalizados pelo Banco Central, o que garante sua segurança. 🤝\n\nÓtimo! Já organizei seus dados para nossa equipe:\n\nArmazena na variável telefone o valor {{ $('Webhook').item.json.body.data.key.remoteJidAlt.replace(/^55/, '').split('@')[0] }}\n\nNome: [nome]\nBem: [bem]\nValor do Crédito: [credito]\nTelefone: [telefone]\n\n[Inserir a frase de contato (poucos minutos ou próximo expediente) de acordo com o horário atual].\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2208,
+        2736
+      ],
+      "id": "1fcb0daf-177f-4db8-a0d2-2fb58eb26370",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=chat_Deu7t_{{ $('DADOS').item.json['Quem mandou'] }}",
+        "sessionTTL": 86400
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        2304,
+        2528
+      ],
+      "id": "1b65f645-ef0a-4d3b-81e8-428bb1031ce8",
+      "name": "Memória",
+      "credentials": {
+        "redis": {
+          "id": "9sybYoSMY1HwwgF9",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2208,
+        2528
+      ],
+      "id": "9f16221b-ec2d-44bc-93a1-9950e23a523a",
+      "name": "Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "4xUhXYMnpk3P5ZYQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b2d16a50-ccd3-4365-ab2a-9ff7b8d73f9f",
+              "leftValue": "={{ $json.output.includes('Nome:') && $json.output.includes('Valor do Crédito:') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2768,
+        2592
+      ],
+      "id": "f7e99b2d-1b22-418e-9bab-a371efca200e",
+      "name": "If_VALIDAR_VARIAVEIS"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ae1af507-0ad1-468f-9cf2-2d137cb79cf5",
+              "leftValue": "={{ $json.ficha_pronta }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3360,
+        2576
+      ],
+      "id": "5c766fb8-8e45-4689-b7c2-aef6277a11f5",
+      "name": "IF_VERIFICA_FICHA_COMPLETA"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/SEU_ID_DA_PLANILHA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/SEU_ID_DA_PLANILHA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nome ": "={{ $json.cliente_nome_final }}",
+            "Bem": "={{ $json.cliente_bem_final }}",
+            "Valor do Crédito": "={{ $json.cliente_credito_final }}",
+            "Telefone": "={{ $json.cliente_telefone_final }}"
+          },
+          "matchingColumns": [
+            "Telefone"
+          ],
+          "schema": [
+            {
+              "id": "Nome ",
+              "displayName": "Nome ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Bem",
+              "displayName": "Bem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Valor do Crédito",
+              "displayName": "Valor do Crédito",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Telefone",
+              "displayName": "Telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2976,
+        2384
+      ],
+      "id": "79184251-a0a5-442f-9365-782168419a7f",
+      "name": "Update_CADASTRO_CLIENTES",
+      "credentials": {
+        "googleApi": {
+          "id": "xIPdXlbOLiG3xdV3",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bc556881-125f-41c3-9a9a-5e6f18c8f119",
+              "leftValue": "={{ $json.body.data.key.fromMe }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2560,
+        3008
+      ],
+      "id": "57ff95fb-7957-4624-b9d3-2f8d062f3fda",
+      "name": "If_IDENTIFICAR_QUEM_ENVIA"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiDados = $(\"AI Agent\").item.json;\nconst respostaIA = aiDados.output || \"\";\n\nfunction extrairFicha(texto) {\n    const nomeMatch = texto.match(/Nome:\\s*([^\\n]+)/i);\n    const bemMatch = texto.match(/Bem:\\s*([^\\n]+)/i);\n    const creditoMatch = texto.match(/Valor do Crédito:\\s*([^\\n]+)/i);\n    const telefoneMatch = texto.match(/Telefone:\\s*([^\\n]+)/i);\n\n    return {\n        nome: nomeMatch ? nomeMatch[1].trim() : \"Não informado\",\n        bem: bemMatch ? bemMatch[1].trim() : \"Consórcio\",\n        credito: creditoMatch ? creditoMatch[1].trim() : \"A combinar\",\n        telefone: telefoneMatch ? telefoneMatch[1].trim() : \"Não informado\"\n    };\n}\n\nconst ficha = extrairFicha(respostaIA);\n\nconst nodeVendedores = $(\"Get_DISTRIBUIR_LEAD\"); \nconst vendedores = nodeVendedores.all().map((v, index) => ({\n  ...v.json,\n  row_number: index + 2\n}));\n\nvendedores.sort((a, b) => (parseInt(a[\"CONTAGEM DE LEADS:\"] || 0) - parseInt(b[\"CONTAGEM DE LEADS:\"] || 0)));\nconst escolhido = vendedores[0] || {};\n\nreturn {\n  ...escolhido,\n  output_limpo: respostaIA, \n  cliente_nome_final: ficha.nome,\n  cliente_bem_final: ficha.bem,\n  cliente_credito_final: ficha.credito,\n  cliente_telefone_final: ficha.telefone,\n  ficha_pronta: respostaIA.toLowerCase().includes(\"nome:\") && respostaIA.toLowerCase().includes(\"valor do crédito:\")\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        2576
+      ],
+      "id": "df916df6-4c93-47fd-8da7-2591bb78151b",
+      "name": "JS_ORDEM_VENDEDOR"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/SEU_ID_DA_PLANILHA/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/SEU_ID_DA_PLANILHA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "CONTAGEM DE LEADS:": "={{ Number($json[\"CONTAGEM DE LEADS:\"]) + 1 }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "NOME DO VENDEDOR:",
+              "displayName": "NOME DO VENDEDOR:",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NÚMERO DO VENDEDOR:",
+              "displayName": "NÚMERO DO VENDEDOR:",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CONTAGEM DE LEADS:",
+              "displayName": "CONTAGEM DE LEADS:",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3552,
+        2464
+      ],
+      "id": "4bc52ed2-49fe-4250-98fb-d7606262cc07",
+      "name": "Update_DISTRIBUIR_LEAD",
+      "credentials": {
+        "googleApi": {
+          "id": "xIPdXlbOLiG3xdV3",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/SEU_ID_DA_PLANILHA/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/SEU_ID_DA_PLANILHA/edit#gid=0"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically"
+            }
+          },
+          "outputFormatting": {
+            "values": {
+              "general": "UNFORMATTED_VALUE",
+              "date": "FORMATTED_STRING"
+            }
+          },
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2976,
+        2576
+      ],
+      "id": "327f0ead-58e3-4c28-ba47-cf609dd3dbc0",
+      "name": "Get_DISTRIBUIR_LEAD",
+      "credentials": {
+        "googleApi": {
+          "id": "xIPdXlbOLiG3xdV3",
+          "name": "Google Service Account account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "=SUA_INSTANCIA",
+        "remoteJid": "={{ $('JS_ORDEM_VENDEDOR').item.json['NÚMERO DO VENDEDOR:'] }}@s.whatsapp.net",
+        "messageText": "=NOVO LEAD! 🚨 \nNome: {{ $json.cliente_nome_final }} \nTelefone: {{ $json.cliente_telefone_final }} \nInteresse: {{ $json.cliente_bem_final }} \nValor do crédito: {{ $json.cliente_credito_final }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        3552,
+        2672
+      ],
+      "id": "f0d05681-32cd-4f39-b1b7-eb13bff2d015",
+      "name": "MENSAGEM_VENDEDOR",
+      "credentials": {
+        "evolutionApi": {
+          "id": "PiWuJSOAOB3S3UmO",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('DADOS').item.json.Instancia }}",
+        "remoteJid": "={{ $('DADOS').item.json['Quem mandou'] }}",
+        "messageText": "={{ $('AI Agent').item.json.output }}",
+        "options_message": {
+          "delay": 2000
+        }
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        2864
+      ],
+      "id": "0b34063f-91d8-439e-83d4-29dcc48f0595",
+      "name": "RESPOSTA_CLIENTE",
+      "credentials": {
+        "evolutionApi": {
+          "id": "PiWuJSOAOB3S3UmO",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chat-api",
+        "operation": "read-messages",
+        "instanceName": "={{ $('DADOS').item.json.Instancia }}",
+        "remoteJid": "=",
+        "messageId": "={{ $('DADOS').item.json['Id da mensagem'] }}"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2768,
+        2864
+      ],
+      "id": "f26a5add-28ab-4309-b161-805c4d8bde43",
+      "name": "LER_MENSAGEM",
+      "credentials": {
+        "evolutionApi": {
+          "id": "PiWuJSOAOB3S3UmO",
+          "name": "Evolution account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "DADOS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DADOS": {
+      "main": [
+        [
+          {
+            "node": "If_IDENTIFICAR_QUEM_ENVIA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If_VALIDAR_VARIAVEIS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "LER_MENSAGEM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_VALIDAR_VARIAVEIS": {
+      "main": [
+        [
+          {
+            "node": "Update_CADASTRO_CLIENTES",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get_DISTRIBUIR_LEAD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF_VERIFICA_FICHA_COMPLETA": {
+      "main": [
+        [
+          {
+            "node": "Update_DISTRIBUIR_LEAD",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MENSAGEM_VENDEDOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_IDENTIFICAR_QUEM_ENVIA": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS_ORDEM_VENDEDOR": {
+      "main": [
+        [
+          {
+            "node": "IF_VERIFICA_FICHA_COMPLETA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_DISTRIBUIR_LEAD": {
+      "main": [
+        [
+          {
+            "node": "JS_ORDEM_VENDEDOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LER_MENSAGEM": {
+      "main": [
+        [
+          {
+            "node": "RESPOSTA_CLIENTE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "3795acaf-adfc-48cc-bf25-e6b1062202a6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9112ef9c2aeaf042adbe7c10fc0771a4c8c10b270d2bb899335ae82573ec58a8"
+  },
+  "id": "0W0lhZ74rSz8wWkg",
+  "tags": []
+}

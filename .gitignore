@@ -1,0 +1,55 @@
+# ==========================================
+# REGRAS DE PYTHON
+# ==========================================
+.venv/
+venv/
+env/
+.env
+*.env
+!*.env.example
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+senha.txt
+*.log
+
+# ==========================================
+# REGRAS DE REACT NATIVE / NODE / JAVASCRIPT
+# ==========================================
+node_modules/
+.expo/
+dist/
+web-build/
+.bundle/
+vendor/bundle/
+*.metro-health-check*
+
+# Builds e Nativos (se gerados localmente)
+android/app/build/
+android/.gradle/
+ios/Pods/
+ios/build/
+
+# ==========================================
+# SISTEMA E IDEs
+# ==========================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ==========================================
+# DADOS DE CONTAINERS E SETUP AUTOMÁTICO
+# ==========================================
+credentials/*.json
+!credentials/*.json.example
+n8n_data/
+postgres_data/
+redis_data/
+evolution_instances/
+iniciar_aplicacao.bat
+iniciar_aplicacao.sh
+docker-compose.yml
